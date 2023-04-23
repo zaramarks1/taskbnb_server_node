@@ -1,0 +1,4 @@
+MONGODB_URL='mongodb+srv://zaramarks:zaracontact@zarademo.2tuvbvy.mongodb.net/?retryWrites=true&w=majority'
+
+USR = 'zaramarks'
+PASS = 'zaracontact'

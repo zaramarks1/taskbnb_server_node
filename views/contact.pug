@@ -1,0 +1,17 @@
+extends layout
+
+block content
+  div(class = 'divTitle')
+    h1(class='title')= title
+  div(class = 'divDisplay')
+    p First name :  #{contact.firstName}
+    p Last name :  #{contact.lastName}
+    p Email:  #{contact.email}
+    p Notes: #{contact.notes}
+    p Date:  #{contact.date}
+
+    a(class ='aStyle', href='/contacts') Show all Contacts
+    | 
+    a(class ='aStyle',href=`/contacts/${contact.id}/delete`) Delete contact
+    |
+    a(class ='aStyle',href=`/contacts/${contact.id}/edit`) Edit contact
