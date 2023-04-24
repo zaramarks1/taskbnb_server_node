@@ -5,7 +5,8 @@ const { Int32 } = require('mongodb');
 
 const unitSchema = new mongoose.Schema({
     unitType: {
-      type: String
+      type: String,
+      enum:['HOUSE', 'APT', 'STUDIO', 'ROOM']
     },
     capacity:{
       type: Number

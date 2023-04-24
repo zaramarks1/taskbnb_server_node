@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
+const Listing = require('../models/Listing');
 const Unit = require('../models/Unit');
 const cors = require('cors')
 
@@ -7,33 +8,40 @@ const router = express.Router();
 router.use(cors())
 
 
-// Get all units
+// Get all Listings
 router.get('/', async function(req, res, next) {
 
     try {
-        const data = await Unit.find();
+        const data = await Listing.find();
         res.json(data);
       } catch (error) {
-        res.status(400).json({message: error.message});
+        res.status(400).json({error: error.message});
       }
   });
 
 
-// Add a Unit
+// Add a Listing
 router.post('/', async (req, res) => {
+
 	try{
-		const unit = new Unit({
-			address: req.body.address,
-			capacity: req.body.capacity,
-			unitType: req.body.unitType,
-			owner: '6444b5b249daca2fba385653'
+
+		const unit = await Unit.findOne({_id : req.body.unitId})
+
+		const listing = new Listing({
+			address: unit.address,
+			title: req.body.title,
+			description: req.body.description,
+			listingStatus: req.body.listingStatus ?  req.body.listingStatus : 'HIDDEN',
+			unitId: unit._id
 		})
-		await unit.save()
-		res.send(unit)
-	}catch(error){
-		res.status(400).json({message: error.message});
+		await listing.save()
+		res.send(listing)
+
+	}catch{
+		res.status(404)
+		res.send({ status: "Not found", message: "Unit not found " })
 	}
-   
+  
   });
 
 // Get users Units
@@ -43,7 +51,7 @@ router.get("/my", async (req, res) => {
 		res.send(unit)
 	} catch {
 		res.status(404)
-		res.send({ status: "Not found", message: "Units not found" })
+		res.send({ status: "Not found", message: "Units not found " })
 	}
 })
 
