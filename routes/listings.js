@@ -12,7 +12,7 @@ router.use(cors())
 router.get('/', async function(req, res, next) {
 
     try {
-        const data = await Listing.find();
+        const data = await Listing.find({listingStatus : 'PUBLIC'});
         res.json(data);
       } catch (error) {
         res.status(400).json({error: error.message});
@@ -31,6 +31,8 @@ router.post('/', async (req, res) => {
 			address: unit.address,
 			title: req.body.title,
 			description: req.body.description,
+			dateStart: req.body.dateStart,
+			dateEnd: req.body.dateEnd,
 			listingStatus: req.body.listingStatus ?  req.body.listingStatus : 'HIDDEN',
 			unitId: unit._id
 		})
@@ -55,14 +57,14 @@ router.get("/my", async (req, res) => {
 	}
 })
 
-  // Get Unit by id
+  // Get Listing by id
 router.get("/:id", async (req, res) => {
 	try {
-		const unit = await Unit.findOne({ _id: req.params.id })
-		res.send(unit)
+		const listing = await Listing.findOne({ _id: req.params.id })
+		res.send(listing)
 	} catch {
 		res.status(404)
-		res.send({ status: "Not found", message: "Unit not found" })
+		res.send({ status: "Not found", message: "Listing not found" })
 	}
 })
 

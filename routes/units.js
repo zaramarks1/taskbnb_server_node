@@ -1,6 +1,7 @@
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
 const Unit = require('../models/Unit');
+const Listing = require('../models/Listing');
 const cors = require('cors')
 
 const router = express.Router();
@@ -55,6 +56,18 @@ router.get("/:id", async (req, res) => {
 	} catch {
 		res.status(404)
 		res.send({ status: "Not found", message: "Unit not found" })
+	}
+})
+
+
+// Get listing by unit
+router.get("/:id/listings", async (req, res) => {
+	try {
+		const listings = await Listing.find({ unitId: req.params.id })
+		res.send(listings)
+	} catch {
+		res.status(404)
+		res.send({ status: "Not found", message: "Listings not found" })
 	}
 })
 
