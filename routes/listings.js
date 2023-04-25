@@ -24,9 +24,7 @@ router.get('/', async function(req, res, next) {
 router.post('/', async (req, res) => {
 
 	try{
-
 		const unit = await Unit.findOne({_id : req.body.unitId})
-
 		const listing = new Listing({
 			address: unit.address,
 			title: req.body.title,
@@ -46,16 +44,16 @@ router.post('/', async (req, res) => {
   
   });
 
-// Get users Units
-router.get("/my", async (req, res) => {
-	try {
-		const unit = await Unit.find({ owner: '6444b5b249daca2fba385653' })
-		res.send(unit)
-	} catch {
-		res.status(404)
-		res.send({ status: "Not found", message: "Units not found " })
-	}
-})
+// // Get users Units
+// router.get("/my", async (req, res) => {
+// 	try {
+// 		const unit = await Unit.find({ owner: '6444b5b249daca2fba385653' })
+// 		res.send(unit)
+// 	} catch {
+// 		res.status(404)
+// 		res.send({ status: "Not found", message: "Units not found " })
+// 	}
+// })
 
   // Get Listing by id
 router.get("/:id", async (req, res) => {
@@ -68,7 +66,26 @@ router.get("/:id", async (req, res) => {
 	}
 })
 
+// Change listing status
+router.put('/:id/changeStatus', async (req, res) => {
+    try {
+		const listing = await Listing.findOne({ _id: req.params.id })
 
+		if (listing.listingStatus === 'PUBLIC') {
+			listing.listingStatus = 'HIDDEN'
+		}else if (listing.listingStatus === 'HIDDEN') {
+			listing.listingStatus = 'PUBLIC'
+		}else{
+			res.status(500)
+			res.send({ status: "Forbidden", message: "Not allowed to change the status of this listing" })
+		}
+		await listing.save()
+		res.send(listing)
+	} catch {
+		res.status(404)
+		res.send({ status: "Not found", message: "Listing not found a" })
+	}
+  });
 
 // edit a unit
 router.put('/:id', async (req, res) => {
@@ -91,18 +108,18 @@ router.put('/:id', async (req, res) => {
 		res.send(post)
 	} catch {
 		res.status(404)
-		res.send({ status: "Not found", message: "Unit not found" })
+		res.send({ status: "Not found", message: "Listing not found" })
 	}
   });
   
-// delete a unit
+// delete a listing
 router.delete('/:id', async (req, res) => {
     try {
-		await Unit.deleteOne({ _id: req.params.id })
+		await Listing.deleteOne({ _id: req.params.id })
 		res.status(204).send()
 	} catch {
 		res.status(404)
-		res.send({ message: "Unit not found" })
+		res.send({ message: "listing not found" })
 	}
 
 });
