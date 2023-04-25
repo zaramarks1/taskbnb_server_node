@@ -87,10 +87,10 @@ router.put('/:id/changeStatus', async (req, res) => {
 	}
   });
 
-// edit a unit
+// edit a listing
 router.put('/:id', async (req, res) => {
     try {
-		const post = await Unit.findOne({ _id: req.params.id })
+		const listing = await Listing.findOne({ _id: req.params.id })
 
 		if (req.body.capacity) {
 			post.capacity = req.body.capacity
@@ -119,7 +119,7 @@ router.delete('/:id', async (req, res) => {
 		res.status(204).send()
 	} catch {
 		res.status(404)
-		res.send({ message: "listing not found" })
+		res.send({ message: "Listing not found" })
 	}
 
 });
