@@ -38,20 +38,22 @@ passport.use(new LocalStrategy({
 }, localAuthUser));
 
 const jwt_opts = {
-  jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer '),
+  jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
   secretOrKey: jwtAccessSecret,
 };
 
 passport.use('jwt', new JwtStrategy(jwt_opts, async function(jwt_payload, done) {
+    console.log(jwt_payload.jwt)
   try {
-    const aUser = await User.findOne({email: jwt_payload.email});
-    if (aUser) {
-        return done(null, aUser, { message: "User not found" });
+    const user = await User.findOne({email: jwt_payload.email});
+    if (user) {
+        return done(null, user);
     } else {
+        console.log('nao foi');
       return done(null, false);
     }
   } catch (error) {
-      console.log(error);
+        console.log(error);
       return done(error, false);
   }
 }));
@@ -102,6 +104,8 @@ router.post('/authenticate', passport.authenticate('local', { session: false }),
         const accessToken = jwt.sign({email: foundUser.email}, jwtAccessSecret, {
             expiresIn: "1d"
           });
+
+          console.log(accessToken)
 
           res.json({
             firstname:foundUser.firstname,

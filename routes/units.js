@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
+const passport = require('passport');
 const Unit = require('../models/Unit');
 const Listing = require('../models/Listing');
 const cors = require('cors')
@@ -10,7 +11,7 @@ router.use(cors())
 
 // Get all units
 router.get('/', async function(req, res, next) {
-
+	
     try {
         const data = await Unit.find();
         res.json(data);
@@ -21,13 +22,14 @@ router.get('/', async function(req, res, next) {
 
 
 // Add a Unit
-router.post('/', async (req, res) => {
+router.post('/', passport.authenticate('jwt', { session: false }), async (req, res) => {
+	
 	try{
 		const unit = new Unit({
 			address: req.body.address,
 			capacity: req.body.capacity,
 			unitType: req.body.unitType,
-			owner: '6444b5b249daca2fba385653'
+			owner: req.user._id
 		})
 		await unit.save()
 		res.send(unit)
@@ -38,24 +40,25 @@ router.post('/', async (req, res) => {
   });
 
 // Get users Units
-router.get("/my", async (req, res) => {
+router.get("/my", passport.authenticate('jwt', { session: false }), async (req, res) => {
+	// console.log(req.user._id);
 	try {
-		const unit = await Unit.find({ owner: '6444b5b249daca2fba385653' })
+		const unit = await Unit.find({ owner: req.user._id })
 		res.send(unit)
-	} catch {
+	} catch (error){
 		res.status(404)
-		res.send({ status: "Not found", message: "Units not found" })
+		res.send({ status: "Not found", message: error.message})
 	}
 })
 
   // Get Unit by id
-router.get("/:id", async (req, res) => {
+router.get("/:id", passport.authenticate('jwt', { session: false }), async (req, res) => {
 	try {
 		const unit = await Unit.findOne({ _id: req.params.id })
 		res.send(unit)
-	} catch {
+	} catch (error){
 		res.status(404)
-		res.send({ status: "Not found", message: "Unit not found" })
+		res.send({ status: "Not found", message: error.message})
 	}
 })
 
@@ -65,43 +68,58 @@ router.get("/:id/listings", async (req, res) => {
 	try {
 		const listings = await Listing.find({ unitId: req.params.id })
 		res.send(listings)
-	} catch {
+	} catch(error) {
 		res.status(404)
-		res.send({ status: "Not found", message: "Listings not found" })
+		res.send({ status: "Not found", message: error.message })
 	}
 })
 
 
 
 // edit a unit
-router.put('/:id', async (req, res) => {
+router.put('/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-		const post = await Unit.findOne({ _id: req.params.id })
+		const unit = await Unit.findOne({ _id: req.params.id })
+		console.log(unit.owner)
+		console.log(req.user._id)
 
-		if (req.body.capacity) {
-			post.capacity = req.body.capacity
+		if(!unit.owner.equals(req.user._id)){
+			res.status(401)
+			res.send({ status: "Forbidden", message: "Not allowed to modify this unit!" })
+		}
+		else{
+			if (req.body.capacity) {
+				unit.capacity = req.body.capacity
+			}
+	
+			if (req.body.unitType) {
+				unit.unitType = req.body.unitType
+			}
+	
+			if (req.body.address) {
+				unit.address = req.body.address
+			}
+	
+			await unit.save()
+			res.send(unit)
 		}
 
-        if (req.body.unitType) {
-			post.unitType = req.body.unitType
-		}
-
-		if (req.body.address) {
-			post.address = req.body.address
-		}
-
-		await post.save()
-		res.send(post)
-	} catch {
+	} catch (error){
 		res.status(404)
-		res.send({ status: "Not found", message: "Unit not found" })
+		res.send({ status: "Not found", message: 'Unit not found' })
 	}
   });
   
 // delete a unit
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',  passport.authenticate('jwt', { session: false }),async (req, res) => {
+	
     try {
-		await Unit.deleteOne({ _id: req.params.id })
+		const unit = await Unit.findOne({ _id: req.params.id })
+		if(unit.ownerId !== req.user._id){
+			res.status(401)
+			res.send({ status: "Forbidden", message: "Not allowed to modify this unit!" })
+		}
+		await Unit.deleteOne(unit)
 		res.status(204).send()
 	} catch {
 		res.status(404)
