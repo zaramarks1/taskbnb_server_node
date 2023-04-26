@@ -16,11 +16,13 @@ async function localAuthUser(email, password, done) {
   try {
     const aUser = await User.findOne({email: email});
     if (!aUser) {
-        return done(null, false);
+        console.log('AAAA');
+        return done(null, false, { message: "User not found" });
+        // return { success: false, message: 'User not found' };
     }
     const isMatch = await aUser.matchPassword(password);
     if (!isMatch) {
-        return done(null, false);
+        return done(null, false, { message: "Password and email do not match" });
     }
     return done(null, aUser);
   } catch (error) {
@@ -44,7 +46,7 @@ passport.use('jwt', new JwtStrategy(jwt_opts, async function(jwt_payload, done) 
   try {
     const aUser = await User.findOne({email: jwt_payload.email});
     if (aUser) {
-        return done(null, aUser);
+        return done(null, aUser, { message: "User not found" });
     } else {
       return done(null, false);
     }
@@ -64,21 +66,28 @@ passport.deserializeUser(function(user, done) {
 
 
 /* POST Signup form. */
-router.post('/signup', async function(req, res, next) {
+router.post('/register', async function(req, res, next) {
   try {
     const newUser = new User({
         firstname: req.body.firstname,
         lastname:req.body.lastname,
         email: req.body.email,
         password: req.body.password,
+        role:'USER'
     });
-    const savedDoc = await newUser.save();
-    req.login(savedDoc, function(err){
-      if (err) { return next(err); }
-      return res.redirect('/users');
-    });
+    const savedUser = await newUser.save();
+    const accessToken = jwt.sign({email: savedUser.email}, jwtAccessSecret, {
+        expiresIn: "1d"
+      });
+    res.json({
+        _id:savedUser.id,
+        firstname:savedUser.firstname,
+        lastname:savedUser.lastname,
+        email: savedUser.email,
+        token:accessToken
+      });
   } catch (error) {
-    return next(error);
+    res.status(400).json({message: error.message});
   }
 });
 
@@ -87,49 +96,25 @@ router.post('/signup', async function(req, res, next) {
 /* POST api login. */
 router.post('/authenticate', passport.authenticate('local', { session: false }), async function(req, res, next) {
 //   const cookies = req.cookies;
-  const foundUser = await User.findOne({ email: req.user.email }).exec();
+    try{
+        const foundUser = await User.findOne({ email: req.user.email }).exec();
 
-  const accessToken = jwt.sign({email: foundUser.email}, jwtAccessSecret, {
-    expiresIn: "1d"
-  });
+        const accessToken = jwt.sign({email: foundUser.email}, jwtAccessSecret, {
+            expiresIn: "1d"
+          });
 
-//   const refreshToken = jwt.sign({email: foundUser.email}, jwtRefreshSecret, {
-//     expiresIn: "1d"
-//   });
+          res.json({
+            firstname:foundUser.firstname,
+            lastname:foundUser.lastname,
+            email: foundUser.email,
+            token:accessToken
+          });
 
-//   let existingRefreshTokenArray = !cookies?.jwt ? foundUser.refreshToken : foundUser.refreshToken.filter(rt => rt !== cookies.jwt);
+    }catch(error){
+        console.log('not found')
+        res.status(401).json({message: 'User not found'})
+    }
 
-//   if (cookies?.jwt) {
-//     // old token reuse or no logout and tries to login again
-//     const cookieRefreshToken = cookies.jwt;
-//     const foundToken = await User.findOne({refreshToken: cookieRefreshToken}).exec();
-//     // old token reuse
-//     if (!foundToken) {
-//       existingRefreshTokenArray = [];
-//     }
-//     res.clearCookie('jwt', { 
-//       httpOnly: true, 
-//       sameSite: 'None', 
-//       //secure: true,
-//     });
-//   }
-
-//   foundUser.refreshToken = [refreshToken, ...existingRefreshTokenArray];
-//   const result = await foundUser.save();
-
-//   res.cookie('jwt', refreshToken, { 
-//     httpOnly: true, 
-//     sameSite: 'None', 
-//     //secure: true, 
-//     maxAge: 24 * 60 * 60 * 1000, //1 day
-//   });
-
-  res.json({
-    firstname:foundUser.firstname,
-    lastname:foundUser.lastname,
-    email: foundUser.email,
-    token:accessToken
-  });
 });
 
 module.exports = router;
