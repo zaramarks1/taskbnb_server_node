@@ -70,7 +70,12 @@ router.get("/:id", async (req, res) => {
 // Change listing status
 router.put('/:id/changeStatus',passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-		const listing = await Listing.findOne({ _id: req.params.id })
+		const listing = await Listing.findOne({ _id: req.params.id }).populate("unitId")
+
+		if(!listing.unitId.ownerId.equals(req.user._id)){
+			res.status(401)
+			res.send({ status: "Forbidden", message: "Not allowed to modify this listing!" })
+		}
 
 		if (listing.listingStatus === 'PUBLIC') {
 			listing.listingStatus = 'HIDDEN'
@@ -89,24 +94,36 @@ router.put('/:id/changeStatus',passport.authenticate('jwt', { session: false }),
   });
 
 // edit a listing
-router.put('/:id', async (req, res) => {
+router.put('/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-		const listing = await Listing.findOne({ _id: req.params.id })
-
-		if (req.body.capacity) {
-			post.capacity = req.body.capacity
+		
+		const listing = await Listing.findOne({ _id: req.params.id }).populate("unitId")
+		if(!listing.unitId.ownerId.equals(req.user._id)){
+			
+			res.status(401)
+			res.send({ status: "Forbidden", message: "Not allowed to modify this listing!" })
+		}else{
+			if (req.body.title) {
+				listing.title = req.body.title
+			}
+	
+			if (req.body.dateStart) {
+				listing.dateStart = req.body.dateStart
+			}
+	
+			if (req.body.dateEnd) {
+				listing.dateEnd = req.body.dateEnd
+			}
+	
+			if (req.body.description) {
+				listing.description = req.body.description
+			}
+	
+			await listing.save()
+			res.send(listing)
 		}
 
-        if (req.body.unitType) {
-			post.unitType = req.body.unitType
-		}
-
-		if (req.body.address) {
-			post.address = req.body.address
-		}
-
-		await post.save()
-		res.send(post)
+		
 	} catch {
 		res.status(404)
 		res.send({ status: "Not found", message: "Listing not found" })
@@ -114,10 +131,16 @@ router.put('/:id', async (req, res) => {
   });
   
 // delete a listing
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
-		await Listing.deleteOne({ _id: req.params.id })
-		res.status(204).send()
+		const listing = await Listing.findOne({ _id: req.params.id }).populate("unitId")
+		if(!listing.unitId.ownerId.equals(req.user._id)){
+			res.status(401)
+			res.send({ status: "Forbidden", message: "Not allowed to modify this listing!" })
+		}else{
+			await Listing.deleteOne({ _id: req.params.id })
+			res.status(204).send()
+		}
 	} catch {
 		res.status(404)
 		res.send({ message: "Listing not found" })

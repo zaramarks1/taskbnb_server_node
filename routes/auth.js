@@ -16,13 +16,12 @@ async function localAuthUser(email, password, done) {
   try {
     const aUser = await User.findOne({email: email});
     if (!aUser) {
-        console.log('AAAA');
-        return done(null, false, { message: "User not found" });
+        return done(null,  { status: false, message: "User not found" });
         // return { success: false, message: 'User not found' };
     }
     const isMatch = await aUser.matchPassword(password);
     if (!isMatch) {
-        return done(null, false, { message: "Password and email do not match" });
+        return done(null, {status:false,  message: "Password and email do not match" });
     }
     return done(null, aUser);
   } catch (error) {
@@ -49,7 +48,6 @@ passport.use('jwt', new JwtStrategy(jwt_opts, async function(jwt_payload, done) 
     if (user) {
         return done(null, user);
     } else {
-        console.log('nao foi');
       return done(null, false);
     }
   } catch (error) {
@@ -96,7 +94,7 @@ router.post('/register', async function(req, res, next) {
 
 
 /* POST api login. */
-router.post('/authenticate', passport.authenticate('local', { session: false }), async function(req, res, next) {
+router.post('/authenticate', passport.authenticate('local', { session: false , passReqToCallback: true}), async function(req, res, next) {
 //   const cookies = req.cookies;
     try{
         const foundUser = await User.findOne({ email: req.user.email }).exec();
@@ -105,9 +103,10 @@ router.post('/authenticate', passport.authenticate('local', { session: false }),
             expiresIn: "1d"
           });
 
-          console.log(accessToken)
+          // console.log(accessToken)
 
           res.json({
+            id:foundUser._id,
             firstname:foundUser.firstname,
             lastname:foundUser.lastname,
             email: foundUser.email,

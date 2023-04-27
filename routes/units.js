@@ -29,7 +29,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 			address: req.body.address,
 			capacity: req.body.capacity,
 			unitType: req.body.unitType,
-			owner: req.user._id
+			ownerId: req.user._id
 		})
 		await unit.save()
 		res.send(unit)
@@ -43,8 +43,8 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 router.get("/my", passport.authenticate('jwt', { session: false }), async (req, res) => {
 	// console.log(req.user._id);
 	try {
-		const unit = await Unit.find({ owner: req.user._id })
-		res.send(unit)
+		const units = await Unit.find({ ownerId: req.user._id })
+		res.send(units)
 	} catch (error){
 		res.status(404)
 		res.send({ status: "Not found", message: error.message})
@@ -80,10 +80,8 @@ router.get("/:id/listings", async (req, res) => {
 router.put('/:id', passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
 		const unit = await Unit.findOne({ _id: req.params.id })
-		console.log(unit.owner)
-		console.log(req.user._id)
 
-		if(!unit.owner.equals(req.user._id)){
+		if(!unit.ownerId.equals(req.user._id)){
 			res.status(401)
 			res.send({ status: "Forbidden", message: "Not allowed to modify this unit!" })
 		}
