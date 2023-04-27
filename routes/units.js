@@ -43,7 +43,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 router.get("/my", passport.authenticate('jwt', { session: false }), async (req, res) => {
 	// console.log(req.user._id);
 	try {
-		const units = await Unit.find({ ownerId: req.user._id })
+		const units = await Unit.find({ ownerId: req.user._id }).populate('listings')
 		res.send(units)
 	} catch (error){
 		res.status(404)

@@ -18,7 +18,13 @@ const unitSchema = new mongoose.Schema({
     ownerId: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: 'User' 
-    }
+    },
+    listings: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Listing"
+      }
+    ],
   });
 
 module.exports = mongoose.model('Unit', unitSchema);
