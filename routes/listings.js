@@ -1,5 +1,6 @@
 const express = require('express');
 const { MongoClient, ObjectId } = require('mongodb');
+const passport = require('passport');
 const Listing = require('../models/Listing');
 const Unit = require('../models/Unit');
 const cors = require('cors')
@@ -67,7 +68,7 @@ router.get("/:id", async (req, res) => {
 })
 
 // Change listing status
-router.put('/:id/changeStatus', async (req, res) => {
+router.put('/:id/changeStatus',passport.authenticate('jwt', { session: false }), async (req, res) => {
     try {
 		const listing = await Listing.findOne({ _id: req.params.id })
 
