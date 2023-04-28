@@ -36,6 +36,8 @@ router.post('/', async (req, res) => {
 			unitId: unit._id
 		})
 		await listing.save()
+		unit.listings.push(listing)
+		unit.save()
 		res.send(listing)
 
 	}catch{

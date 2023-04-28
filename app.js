@@ -7,7 +7,6 @@ var logger = require('morgan');
 require('dotenv').config()
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-var contactsRouter = require('./routes/contacts');
 var unitsRouter = require('./routes/units');
 var listingRouter = require('./routes/listings');
 var authRouter = require('./routes/auth');
@@ -53,7 +52,6 @@ mongoose.connect(process.env.MONGODB_URL)
 
 app.use('/', indexRouter);
 //app.use('/users', usersRouter);
-app.use('/contacts', contactsRouter);
 app.use('/api/v1/units', unitsRouter);
 app.use('/api/v1/users', usersRouter);
 app.use('/api/v1/listings', listingRouter);

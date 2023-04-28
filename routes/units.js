@@ -43,7 +43,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), async (req, r
 router.get("/my", passport.authenticate('jwt', { session: false }), async (req, res) => {
 	// console.log(req.user._id);
 	try {
-		const units = await Unit.find({ ownerId: req.user._id }).populate('listings')
+		const units = await Unit.find({ ownerId: req.user._id })
 		res.send(units)
 	} catch (error){
 		res.status(404)
@@ -112,13 +112,17 @@ router.put('/:id', passport.authenticate('jwt', { session: false }), async (req,
 router.delete('/:id',  passport.authenticate('jwt', { session: false }),async (req, res) => {
 	
     try {
-		const unit = await Unit.findOne({ _id: req.params.id })
-		if(unit.ownerId !== req.user._id){
+		const unit = await Unit.findOne({ _id: req.params.id }).populate("listings")
+		if(!unit.ownerId.equals(req.user._id)){
 			res.status(401)
 			res.send({ status: "Forbidden", message: "Not allowed to modify this unit!" })
+		}else{
+			// console.log(unit.listings)
+			await Listing.deleteMany({ _id: { $in: unit.listings } });
+			await Unit.deleteOne(unit)
+			res.status(204).send()
 		}
-		await Unit.deleteOne(unit)
-		res.status(204).send()
+		
 	} catch {
 		res.status(404)
 		res.send({ message: "Unit not found" })

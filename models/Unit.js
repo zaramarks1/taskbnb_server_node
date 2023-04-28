@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { Int32 } = require('mongodb');
-
+const Listing = require('./Listing');
 
 const unitSchema = new mongoose.Schema({
     unitType: {
@@ -26,5 +26,17 @@ const unitSchema = new mongoose.Schema({
       }
     ],
   });
+
+  // unitSchema.pre('deleteOne', async function (next) {
+  //   const listings = await Listing.find({ unitId: this._id }).exec();
+  //   console.log(listings)
+  //   console.log('entrou')
+  //   try {
+  //     await Listing.deleteMany({ _id: { $in: listings } });
+  //     next();
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // });
 
 module.exports = mongoose.model('Unit', unitSchema);
