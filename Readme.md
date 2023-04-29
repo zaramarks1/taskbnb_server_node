@@ -64,21 +64,24 @@ Open another terminal in the folder you  wish to clone the frontend:
 
 `cd taskbnb_client`
 
+The frontend is used for two backends. Since the other backend (Java), I had more time to develop and the deadline is later, I might be adding some new frontend pages for the other backend. To avoid errors, please go to the branch `itmd-542`. It is a clone of the Main branch as of 28 of April. 
+
+The code to go to the correct branch:
+
+`git checkout itmd-542`
+
+
 ### For both
 
 Since we are inside the folder with the project:
 
-Lets also download npm-check-updates so we can see if we need to have any updates:
-
-` npm install npm-check-updates@latest `
-
-This will check if theres any thing to update:
-
-`npx npm-check-updates`
-
-If there is, you can run the following command:
+To install all the package, run the following line:
 
 `npm install`
+
+If there are any issues, you can run :
+
+` npm audit fix --force`
 
 And now we can start our project using :
 
