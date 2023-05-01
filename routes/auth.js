@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 
-const jwtAccessSecret = "This is my JWT access secret, it should be in a .env file!";
+const jwtAccessSecret = process.env.JWT_SECRET
 
 const cors = require('cors')
 router.use(cors())
