@@ -24,7 +24,7 @@ router.get('/', async function(req, res, next) {
 
 
 // Add a Listing
-router.post('/', async (req, res) => {
+router.post('/', passport.authenticate('jwt', { session: false }),async (req, res) => {
 
     try{
         // Find the unit associated with the listing
